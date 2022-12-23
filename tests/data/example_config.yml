@@ -1,0 +1,44 @@
+ds_dir: "/path/to/dataset"
+series_name: "series1"
+
+start_sec: 0.0
+duration: -1.0
+
+roi_src_type: "annotation"
+roi_src_name: "hypnogram"
+
+components:
+
+  c1:
+    src_name: "s1"
+    ctype: "sample_array"
+
+  c2:
+    src_name: "s2"
+    ctype: "sample_array"
+
+  events:
+    src_name: "events_annotated.parquet"
+    ctype: "annotation"
+    fs: 1.0
+    return_type: "bbox"
+    value_map:
+      apnea_obstructive: 1
+      apnea_central: 1
+      apnea_mixed: 1
+      hypopnea: 2
+      _default: 0
+
+  hypnogram:
+    src_name: "hypnogram_annotated.parquet"
+    ctype: "annotation"
+    sampling_interval: 30.0
+    return_type: "segmentation_combined"
+    value_map:
+      WAKE: 0
+      N1: 1
+      N2: 2
+      N3: 3
+      REM: 4
+      _default: 0
+      
