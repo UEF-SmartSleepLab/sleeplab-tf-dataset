@@ -294,18 +294,3 @@ def from_slf_dataset(
     tf_ds = tf_ds.map(lambda e: _map_func(e['subject_dir'], e['roi_start_sec'], e['roi_end_sec']))
     
     return tf_ds
-
-
-def train_test_split(cfg: DatasetConfig) -> dict[str, tf.data.Dataset]:
-    # TODO: Filter e.g. >1h sleep?
-    slf_ds = slf.reader.read_dataset(
-        Path(cfg.ds_dir),
-        series=cfg.series.keys(),
-        include_logs=False,
-        include_annotations=False
-    )
-    # tf_ds = tf.data.Dataset.from_tensor_slices(...)
-    # tf_ds = tf_ds.map(lambda e: load_element(e))
-    tf_ds = from_slf_dataset(slf_ds, cfg)
-    
-    return tf_ds
