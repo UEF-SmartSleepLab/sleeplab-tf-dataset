@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "sleeplab-tf-dataset"
 description = 'Tools for creating tensorflow Dataset objects from sleeplab-format data'
 readme = "README.md"
-requires-python = ">=3.7"
+requires-python = ">=3.10"
 license = "MIT"
 keywords = []
 authors = [
@@ -15,9 +15,6 @@ authors = [
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3.7",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: Implementation :: CPython",
@@ -27,7 +24,7 @@ dependencies = [
   "numpy",
   "pyyaml",
   "tensorflow",
-  "sleeplab-format @ git+https://github.com/UEF-SmartSleepLab/sleeplab-format@main"
+  "sleeplab-format @ git+ssh://git@github.com/UEF-SmartSleepLab/sleeplab-format@main"
 ]
 dynamic = ["version"]
 
@@ -49,7 +46,7 @@ cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=sleepl
 no-cov = "cov --no-cov {args}"
 
 [[tool.hatch.envs.test.matrix]]
-python = ["37", "38", "39", "310", "311"]
+python = ["310", "311"]
 
 [tool.coverage.run]
 branch = true
