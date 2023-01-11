@@ -206,7 +206,7 @@ def load_element(
 
 
 def roi_start_end_sec(
-        series: slf.models.Series,
+        subjects: dict[str, slf.models.Subject],
         src_type: str, src_name: str) -> tuple[float, float]:
     """Resolve start and end times for the region of interest.
     
@@ -236,7 +236,7 @@ def roi_start_end_sec(
     start_sec_list = []
     end_sec_list = []
     
-    for _, subj in series.subjects.items():
+    for _, subj in subjects.items():
         if src_type == 'annotation':
             start, end = roi_start_end_from_annotation(subj, src_name)
         elif src_type == 'sample_array':
@@ -264,17 +264,18 @@ def from_slf_dataset(
     series_dir = cfg.ds_dir / cfg.series_name
     subject_dirs = []
     series = slf_ds.series[cfg.series_name]
+    subjects = series.subjects
 
-    if subject_ids is None:
-        subject_ids = series.subjects.keys()
+    if subject_ids is not None:
+        subjects = {k: v for k, v in subjects.items() if k in subject_ids}
 
-    for subj_id in subject_ids:
+    for subj_id in subjects.keys():
         subject_dir = series_dir / subj_id
         subj_dir_tensor = tf.convert_to_tensor(str(subject_dir))
         subject_dirs.append(subj_dir_tensor)
 
     # Resolve ROI start and end times
-    roi_starts, roi_ends = roi_start_end_sec(series, cfg.roi_src_type, cfg.roi_src_name)
+    roi_starts, roi_ends = roi_start_end_sec(subjects, cfg.roi_src_type, cfg.roi_src_name)
 
     # Create a dict with subject metadata and ROI information
     slf_ds_dict = {
