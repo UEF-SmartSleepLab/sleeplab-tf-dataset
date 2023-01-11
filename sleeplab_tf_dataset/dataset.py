@@ -254,7 +254,8 @@ def roi_start_end_sec(
 
 def from_slf_dataset(
         slf_ds: slf.models.Dataset,
-        cfg: DatasetConfig) -> tf.data.Dataset:
+        cfg: DatasetConfig,
+        subject_ids: list[str] | None = None) -> tf.data.Dataset:
     def component_config_to_dict(cfg):
         # Tensorflow does not understand custom objects so cast it to dict
         return {k: v.dict() for k, v in cfg.items()}
@@ -263,7 +264,11 @@ def from_slf_dataset(
     series_dir = cfg.ds_dir / cfg.series_name
     subject_dirs = []
     series = slf_ds.series[cfg.series_name]
-    for subj_id in series.subjects.keys():
+
+    if subject_ids is None:
+        subject_ids = series.subjects.keys()
+
+    for subj_id in subject_ids:
         subject_dir = series_dir / subj_id
         subj_dir_tensor = tf.convert_to_tensor(str(subject_dir))
         subject_dirs.append(subj_dir_tensor)

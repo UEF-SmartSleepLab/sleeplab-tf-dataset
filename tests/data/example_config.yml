@@ -40,5 +40,4 @@ components:
       N2: 2
       N3: 3
       REM: 4
-      _default: 0
-      
+      _default: 0 
