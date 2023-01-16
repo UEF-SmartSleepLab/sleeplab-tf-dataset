@@ -24,19 +24,14 @@ def load_sample_array(
         duration: The duration to load. If duration == -1, load until the end
         cfg: The ComponentConfig to load
         dtype: Tensorflow DType for the returned signal
+
+    Returns:
+        The signal as a tf.Tensor
     """
     _subj_dir = Path(subject_dir.numpy().decode())
-    attr_fpath = _subj_dir / cfg['src_name'] / 'attributes.json'
-    
-    with open(attr_fpath, 'r') as f:
-        attributes = json.load(f)
-    
-    fs = attributes['sampling_rate']
+    fs = cfg['fs']
     start_idx = start_sec * fs
-    if duration == -1:
-        end_idx = None
-    else:
-        end_idx = start_idx + duration * fs
+    end_idx = start_idx + duration * fs
 
     start_idx = tf.cast(start_idx, tf.int32)
     end_idx = tf.cast(end_idx, tf.int32)
@@ -46,8 +41,6 @@ def load_sample_array(
     s = s[start_idx:end_idx]
 
     return tf.convert_to_tensor(s[..., np.newaxis], dtype=dtype)
-    #     tf.convert_to_tensor([n, 1], dtype=tf.int32)
-    # ]
 
 
 def load_annotations(
@@ -56,7 +49,7 @@ def load_annotations(
         duration: tf.Tensor,
         cfg: dict[str, Any]) -> tf.Tensor | tuple[tf.Tensor, tf.Tensor]:
     """Load sleeplab-format Annotations as tf.Tensor data.
-    
+
     Args:
         cfg.return_type: 'segmentation_combined', 'segmentation_separate', or 'bbox'.
             segmentation_combined returns a 1-d array where the values looked up
@@ -135,25 +128,80 @@ def load_component(
         subject_dir: tf.Tensor,
         start_sec: tf.Tensor,
         duration: tf.Tensor,
+        orig_duration: float,
         cfg: dict[str, Any]) -> tf.Tensor | tuple[tf.Tensor, tf.Tensor]:
+    """Load a single component of an element.
+
+    Args:
+        orig_duration: The original duration from the configuration.
+            This is needed to set the shape of the loaded component.
+    """
+    # Compute the shape for first dimension of the output (excluding batch dim)."""
+    if cfg['fs'] is not None:
+        fs = cfg['fs']
+    else:
+        fs = 1 / cfg['sampling_interval']
+
+    shape_0 = int(orig_duration * fs)
+
     if cfg['ctype'] == 'sample_array':
-        return tf.py_function(
+        res = tf.py_function(
             partial(load_sample_array, cfg=cfg),
             [subject_dir, start_sec, duration],
             tf.float32
         )
-        #res.set_shape(shape)
+        if orig_duration == -1.0:
+            res.set_shape([None, 1])
+        else:
+            res.set_shape([shape_0, 1])
+        return res
+
     elif cfg['ctype'] == 'annotation':
+
         if cfg['return_type'] == 'segmentation_combined':
             pyfunc_return_type = tf.int32
-        else:
+            res = tf.py_function(
+                partial(load_annotations, cfg=cfg),
+                [subject_dir, start_sec, duration],
+                pyfunc_return_type
+            )
+            if orig_duration == -1.0:
+                res.set_shape((None,))
+            else:
+                res.set_shape((shape_0,))
+
+            return res
+
+        elif cfg['return_type'] == 'segmentation_separate':
             pyfunc_return_type = [tf.int32, tf.int32]
-        return tf.py_function(
-            partial(load_annotations, cfg=cfg),
-            [subject_dir, start_sec, duration],
-            pyfunc_return_type
-        )
-        #res.set_shape(shape)
+            nclasses = len(set(cfg['value_map'].values()))
+
+            res = tf.py_function(
+                partial(load_annotations, cfg=cfg),
+                [subject_dir, start_sec, duration],
+                pyfunc_return_type
+            )
+            if orig_duration == -1.0:
+                res[0].set_shape([None, nclasses])
+            else:
+                res[0].set_shape([shape_0, nclasses])
+            res[1].set_shape((nclasses,))
+
+            return res
+
+        else:
+            # bboxes
+            pyfunc_return_type = [tf.int32, tf.int32]
+
+            res = tf.py_function(
+                partial(load_annotations, cfg=cfg),
+                [subject_dir, start_sec, duration],
+                pyfunc_return_type
+            )
+            res[0].set_shape([None, 2])
+            res[1].set_shape((None,))
+
+            return res
     
     else:
         raise AttributeError(f'Unknown component type {cfg["ctype"]}')
@@ -164,8 +212,8 @@ def load_element(
         subject_dir: tf.Tensor,
         roi_start_sec: tf.Tensor,
         roi_end_sec: tf.Tensor,
-        start_sec: tf.Tensor,
-        duration: tf.Tensor,
+        start_sec: float,
+        duration: float,
         component_cfgs: dict[str, dict[str, Any]],
         start_sec_sampling_interval: tf.Tensor = tf.constant(30.0)) -> dict[str, tf.Tensor]:
     """Load a single element (subject) according to component configs.
@@ -180,6 +228,7 @@ def load_element(
     """
     res = {}
 
+    start_sec = tf.cast(start_sec, tf.float32)
     # Randomly sample the start time of the frame if start_sec is not specified
     if start_sec == -1.0:
         #assert duration > tf.constant(0.0), 'Need to define start_sec or duration'
@@ -192,10 +241,12 @@ def load_element(
 
     # Load until the end if duration is not specified
     if duration == -1.0:
-        duration = tf.cast(roi_end_sec - start_sec, tf.float32)
+        tf_duration = tf.cast(roi_end_sec - start_sec, tf.float32)
+    else:
+        tf_duration = tf.cast(duration, tf.float32)
 
     for k, cfg in component_cfgs.items():
-        component = load_component(subject_dir, start_sec, duration, cfg)
+        component = load_component(subject_dir, start_sec, tf_duration, duration, cfg)
         
         if cfg['ctype'] == 'annotation' and cfg['return_type'] != 'segmentation_combined':
             component = {'values': component[0], 'labels': component[1]}
@@ -292,8 +343,8 @@ def from_slf_dataset(
 
     # Create a partial func for mapping
     _map_func = partial(load_element,
-        start_sec=tf.convert_to_tensor(cfg.start_sec),
-        duration=tf.convert_to_tensor(cfg.duration),
+        start_sec=cfg.start_sec,
+        duration=cfg.duration,
         component_cfgs=component_config_to_dict(cfg.components))
     
     # Map the dataset

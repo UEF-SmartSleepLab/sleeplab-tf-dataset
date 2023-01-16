@@ -12,10 +12,12 @@ components:
   c1:
     src_name: "s1"
     ctype: "sample_array"
+    fs: 32.0
 
   c2:
     src_name: "s2"
     ctype: "sample_array"
+    fs: 64.0
 
   events:
     src_name: "events_annotated.parquet"

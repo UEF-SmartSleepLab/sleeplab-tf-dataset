@@ -12,8 +12,8 @@ def test_load_array_full(ds_dir, example_config_path):
     component_cfg = cfg.components['c1']
     subject_dir = ds_dir / 'series1' / '10001'
     subject_dir = tf.convert_to_tensor(str(subject_dir))
-    start_sec = tf.convert_to_tensor(0)
-    duration = tf.convert_to_tensor(60)
+    start_sec = tf.convert_to_tensor(0.0)
+    duration = tf.convert_to_tensor(60.0)
     s = dataset.load_sample_array(subject_dir, start_sec, duration, component_cfg.dict())
     
     assert tuple(s.shape) == (duration*32, 1)
@@ -24,8 +24,8 @@ def test_load_array_partial(ds_dir, example_config_path):
     component_cfg = cfg.components['c1']
     subject_dir = ds_dir / 'series1' / '10001'
     subject_dir = tf.convert_to_tensor(str(subject_dir))
-    start_sec = tf.convert_to_tensor(10)
-    duration = tf.convert_to_tensor(25)
+    start_sec = tf.convert_to_tensor(10.0)
+    duration = tf.convert_to_tensor(25.0)
     s = dataset.load_sample_array(subject_dir, start_sec, duration, component_cfg.dict())
     
     assert tuple(s.shape) == (duration*32, 1)
@@ -145,10 +145,11 @@ def test_load_component_sample_array(ds_dir, example_config_path):
     component_cfg = cfg.components['c1']
     subject_dir = ds_dir / 'series1' / '10001'
     subject_dir = tf.convert_to_tensor(str(subject_dir))
-    start_sec = tf.convert_to_tensor(10)
-    duration = tf.convert_to_tensor(25)
+    start_sec = tf.convert_to_tensor(10.0)
+    duration = 25.0
+    tf_duration = tf.convert_to_tensor(duration)
     _load_func = partial(dataset.load_component, cfg=component_cfg.dict())
-    s = _load_func(subject_dir, start_sec, duration)
+    s = _load_func(subject_dir, start_sec, tf_duration, duration)
     
     assert tuple(s.shape) == (duration*32, 1)
     assert s.dtype == tf.float32
@@ -160,13 +161,15 @@ def test_load_component_annotation(ds_dir, example_config_path):
     subject_dir = ds_dir / 'series1' / '10001'
     subject_dir = tf.convert_to_tensor(str(subject_dir))
     start_sec = tf.convert_to_tensor(25.0)
-    duration = tf.convert_to_tensor(20.0)
+    duration = 20.0
+    tf_duration = tf.cast(duration, tf.float32)
 
     # Test segmentation_combined
     component_cfg.return_type = 'segmentation_combined'
-    ann = dataset.load_component(subject_dir, start_sec, duration,
+    ann = dataset.load_component(subject_dir, start_sec, tf_duration, duration,
         component_cfg.dict())
     
+    print(ann)
     assert tuple(ann.shape) == (duration*component_cfg.fs,)
     
     expected = np.concatenate([np.full(5, 1), np.full(10, 2), np.full(5, 0)])
@@ -175,7 +178,7 @@ def test_load_component_annotation(ds_dir, example_config_path):
 
     # Test bbox
     component_cfg.return_type = 'bbox'
-    bboxes, labels = dataset.load_component(subject_dir, start_sec, duration,
+    bboxes, labels = dataset.load_component(subject_dir, start_sec, tf_duration, duration,
         component_cfg.dict())
 
     expected = {
@@ -195,8 +198,8 @@ def test_load_element_full(ds_dir, example_config_path):
     roi_start_sec = tf.convert_to_tensor(0.0)
     roi_end_sec = tf.convert_to_tensor(60.0)
 
-    start_sec = tf.convert_to_tensor(0.0)
-    duration = tf.convert_to_tensor(60.0)
+    start_sec = 0.0
+    duration = 60.0
 
     component_cfgs = {k: v.dict() for k, v in cfg.components.items()}
 
@@ -233,8 +236,8 @@ def test_load_element_partial(ds_dir, example_config_path):
     roi_start_sec = tf.convert_to_tensor(0.0)
     roi_end_sec = tf.convert_to_tensor(60.0)
 
-    start_sec = tf.convert_to_tensor(30.0)
-    duration = tf.convert_to_tensor(30.0)
+    start_sec = 30.0
+    duration = 30.0
 
     component_cfgs = {k: v.dict() for k, v in cfg.components.items()}
 
@@ -258,8 +261,8 @@ def test_load_element_random_start_sec(ds_dir, example_config_path):
     roi_start_sec = tf.convert_to_tensor(0.0)
     roi_end_sec = tf.convert_to_tensor(60.0)
 
-    start_sec = tf.convert_to_tensor(-1.0)
-    duration = tf.convert_to_tensor(30.0)
+    start_sec = -1.0
+    duration = 30.0
 
     component_cfgs = {k: v.dict() for k, v in cfg.components.items()}
 

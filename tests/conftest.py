@@ -1,7 +1,7 @@
 import pytest
 
 from pathlib import Path
-from sleeplab_format.test_utils.fixtures import *
+from sleeplab_format.test_utils.fixtures import dataset, series, subjects, subject_ids
 from sleeplab_format import writer
 
 
