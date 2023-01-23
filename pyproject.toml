@@ -34,7 +34,7 @@ Issues = "https://github.com/UEF-SmartSleepLab/sleeplab-tf-dataset/issues"
 Source = "https://github.com/UEF-SmartSleepLab/sleeplab-tf-dataset"
 
 [tool.hatch.version]
-path = "sleeplab_tf_dataset/__about__.py"
+path = "src/sleeplab_tf_dataset/__about__.py"
 
 [tool.hatch.envs.default]
 dependencies = [
@@ -42,7 +42,7 @@ dependencies = [
   "pytest-cov",
 ]
 [tool.hatch.envs.default.scripts]
-cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=sleeplab_tf_dataset --cov=tests {args}"
+cov = "pytest --cov-report=term-missing --cov-config=pyproject.toml --cov=src/sleeplab_tf_dataset --cov=tests {args}"
 no-cov = "cov --no-cov {args}"
 
 [[tool.hatch.envs.test.matrix]]
@@ -52,7 +52,7 @@ python = ["310", "311"]
 branch = true
 parallel = true
 omit = [
-  "sleeplab_tf_dataset/__about__.py",
+  "src/sleeplab_tf_dataset/__about__.py",
 ]
 
 [tool.coverage.report]
