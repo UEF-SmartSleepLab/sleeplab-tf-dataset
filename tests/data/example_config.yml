@@ -25,10 +25,10 @@ components:
     fs: 1.0
     return_type: "bbox"
     value_map:
-      apnea_obstructive: 1
-      apnea_central: 1
-      apnea_mixed: 1
-      hypopnea: 2
+      APNEA_OBSTRUCTIVE: 1
+      APNEA_CENTRAL: 1
+      APNEA_MIXED: 1
+      HYPOPNEA: 2
       _default: 0
 
   hypnogram:
