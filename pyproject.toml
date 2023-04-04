@@ -22,6 +22,7 @@ classifiers = [
 ]
 dependencies = [
   "numpy",
+  "pandas<2.0.0",
   "pyyaml",
   "tensorflow",
   "sleeplab-format @ git+ssh://git@github.com/UEF-SmartSleepLab/sleeplab-format@main"
