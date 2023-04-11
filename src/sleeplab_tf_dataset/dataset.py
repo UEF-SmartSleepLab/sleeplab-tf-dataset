@@ -233,7 +233,7 @@ def load_element(
     if start_sec == -1.0:
         #assert duration > tf.constant(0.0), 'Need to define start_sec or duration'
         start_interval = tf.random.uniform(shape=[],
-            minval=tf.cast(roi_start_sec, tf.int32),
+            minval=tf.cast(roi_start_sec / start_sec_sampling_interval, tf.int32),
             maxval=tf.cast((roi_end_sec - duration) / start_sec_sampling_interval, tf.int32) + 1,
             dtype=tf.int32)
         
