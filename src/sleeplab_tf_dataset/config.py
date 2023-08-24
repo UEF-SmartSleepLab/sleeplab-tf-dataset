@@ -1,19 +1,19 @@
 import yaml
 
 from pathlib import Path
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel
 
 
-class ComponentConfig(BaseModel, extra=Extra.forbid):
+class ComponentConfig(BaseModel, extra='forbid'):
     src_name: str
     ctype: str
-    fs: float | None
-    sampling_interval: float | None
-    value_map: dict[str, int] | None
-    return_type: str | None
+    fs: float | None = None
+    sampling_interval: float | None = None
+    value_map: dict[str, int] | None = None
+    return_type: str | None = None
 
 
-class DatasetConfig(BaseModel, extra=Extra.forbid):
+class DatasetConfig(BaseModel, extra='forbid'):
     ds_dir: Path
     series_name: str
     components: dict[str, ComponentConfig]
@@ -28,4 +28,4 @@ def parse_config(config_path: Path) -> DatasetConfig:
     with open(config_path, 'r') as f:
         cfg = yaml.safe_load(f)
 
-    return DatasetConfig.parse_obj(cfg)
+    return DatasetConfig.model_validate(cfg)

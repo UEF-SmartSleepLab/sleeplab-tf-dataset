@@ -14,7 +14,7 @@ def test_load_array_full(ds_dir, example_config_path):
     subject_dir = tf.convert_to_tensor(str(subject_dir))
     start_sec = tf.convert_to_tensor(0.0)
     duration = tf.convert_to_tensor(60.0)
-    s = dataset.load_sample_array(subject_dir, start_sec, duration, component_cfg.dict())
+    s = dataset.load_sample_array(subject_dir, start_sec, duration, component_cfg.model_dump())
     
     assert tuple(s.shape) == (duration*32, 1)
     assert s.dtype == tf.float32
@@ -26,7 +26,7 @@ def test_load_array_partial(ds_dir, example_config_path):
     subject_dir = tf.convert_to_tensor(str(subject_dir))
     start_sec = tf.convert_to_tensor(10.0)
     duration = tf.convert_to_tensor(25.0)
-    s = dataset.load_sample_array(subject_dir, start_sec, duration, component_cfg.dict())
+    s = dataset.load_sample_array(subject_dir, start_sec, duration, component_cfg.model_dump())
     
     assert tuple(s.shape) == (duration*32, 1)
     assert s.dtype == tf.float32
@@ -43,7 +43,7 @@ def test_load_hypnogram_full(ds_dir, example_config_path):
     # Test segmentation_combined
     component_cfg.return_type = 'segmentation_combined'
     ann = dataset.load_annotations(subject_dir, start_sec, duration,
-        component_cfg.dict())
+        component_cfg.model_dump())
     
     assert tuple(ann.shape) == (duration*(1/component_cfg.sampling_interval),)
     assert ann.numpy().tolist() == [1, 0]
@@ -51,7 +51,7 @@ def test_load_hypnogram_full(ds_dir, example_config_path):
     # Test segmentation_separate
     component_cfg.return_type = 'segmentation_separate'
     ann, labels = dataset.load_annotations(subject_dir, start_sec, duration,
-        component_cfg.dict())
+        component_cfg.model_dump())
     assert set(labels.numpy().tolist()) == set([0, 1, 2, 3, 4])
     assert ann[0].numpy().tolist() == [0, 1]
     assert ann[1].numpy().tolist() == [1, 0]
@@ -68,7 +68,7 @@ def test_load_hypnogram_partial(ds_dir, example_config_path):
     # Test segmentation_combined
     component_cfg.return_type = 'segmentation_combined'
     ann = dataset.load_annotations(subject_dir, start_sec, duration,
-        component_cfg.dict())
+        component_cfg.model_dump())
     
     assert tuple(ann.shape) == (duration*(1/component_cfg.sampling_interval),)
     assert ann.numpy().tolist() == [0]
@@ -85,7 +85,7 @@ def test_load_events_full(ds_dir, example_config_path):
     # Test segmentation_combined
     component_cfg.return_type = 'segmentation_combined'
     ann = dataset.load_annotations(subject_dir, start_sec, duration,
-        component_cfg.dict())
+        component_cfg.model_dump())
     
     assert tuple(ann.shape) == (duration*component_cfg.fs,)
     
@@ -96,7 +96,7 @@ def test_load_events_full(ds_dir, example_config_path):
     # Test bbox
     component_cfg.return_type = 'bbox'
     bboxes, labels = dataset.load_annotations(subject_dir, start_sec, duration,
-        component_cfg.dict())
+        component_cfg.model_dump())
 
     expected = {
         'bboxes': tf.convert_to_tensor([[20, 30], [30, 40]]),
@@ -118,7 +118,7 @@ def test_load_events_partial(ds_dir, example_config_path):
     # Test segmentation_combined
     component_cfg.return_type = 'segmentation_combined'
     ann = dataset.load_annotations(subject_dir, start_sec, duration,
-        component_cfg.dict())
+        component_cfg.model_dump())
     
     assert tuple(ann.shape) == (duration*component_cfg.fs,)
     
@@ -129,7 +129,7 @@ def test_load_events_partial(ds_dir, example_config_path):
     # Test bbox
     component_cfg.return_type = 'bbox'
     bboxes, labels = dataset.load_annotations(subject_dir, start_sec, duration,
-        component_cfg.dict())
+        component_cfg.model_dump())
 
     expected = {
         'bboxes': tf.convert_to_tensor([[0, 5], [5, 15]]),
@@ -148,7 +148,7 @@ def test_load_component_sample_array(ds_dir, example_config_path):
     start_sec = tf.convert_to_tensor(10.0)
     duration = 25.0
     tf_duration = tf.convert_to_tensor(duration)
-    _load_func = partial(dataset.load_component, cfg=component_cfg.dict())
+    _load_func = partial(dataset.load_component, cfg=component_cfg.model_dump())
     s = _load_func(subject_dir, start_sec, tf_duration, duration)
     
     assert tuple(s.shape) == (duration*32, 1)
@@ -167,7 +167,7 @@ def test_load_component_annotation(ds_dir, example_config_path):
     # Test segmentation_combined
     component_cfg.return_type = 'segmentation_combined'
     ann = dataset.load_component(subject_dir, start_sec, tf_duration, duration,
-        component_cfg.dict())
+        component_cfg.model_dump())
     
     print(ann)
     assert tuple(ann.shape) == (duration*component_cfg.fs,)
@@ -179,7 +179,7 @@ def test_load_component_annotation(ds_dir, example_config_path):
     # Test bbox
     component_cfg.return_type = 'bbox'
     bboxes, labels = dataset.load_component(subject_dir, start_sec, tf_duration, duration,
-        component_cfg.dict())
+        component_cfg.model_dump())
 
     expected = {
         'bboxes': tf.convert_to_tensor([[0, 5], [5, 15]]),
@@ -201,7 +201,7 @@ def test_load_element_full(ds_dir, example_config_path):
     start_sec = 0.0
     duration = 60.0
 
-    component_cfgs = {k: v.dict() for k, v in cfg.components.items()}
+    component_cfgs = {k: v.model_dump() for k, v in cfg.components.items()}
 
     elem = dataset.load_element(subject_dir,
         roi_start_sec, roi_end_sec, start_sec, duration, component_cfgs)
@@ -239,7 +239,7 @@ def test_load_element_partial(ds_dir, example_config_path):
     start_sec = 30.0
     duration = 30.0
 
-    component_cfgs = {k: v.dict() for k, v in cfg.components.items()}
+    component_cfgs = {k: v.model_dump() for k, v in cfg.components.items()}
 
     elem = dataset.load_element(subject_dir,
         roi_start_sec, roi_end_sec, start_sec, duration, component_cfgs)
@@ -264,7 +264,7 @@ def test_load_element_random_start_sec(ds_dir, example_config_path):
     start_sec = -1.0
     duration = 30.0
 
-    component_cfgs = {k: v.dict() for k, v in cfg.components.items()}
+    component_cfgs = {k: v.model_dump() for k, v in cfg.components.items()}
 
     elem = dataset.load_element(subject_dir,
         roi_start_sec, roi_end_sec, start_sec, duration, component_cfgs)

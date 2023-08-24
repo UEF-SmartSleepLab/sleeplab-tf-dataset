@@ -309,7 +309,7 @@ def from_slf_dataset(
         subject_ids: list[str] | None = None) -> tf.data.Dataset:
     def component_config_to_dict(cfg):
         # Tensorflow does not understand custom objects so cast it to dict
-        return {k: v.dict() for k, v in cfg.items()}
+        return {k: v.model_dump() for k, v in cfg.items()}
 
     # Resolve subject_dirs as string tensors
     series_dir = cfg.ds_dir / cfg.series_name
