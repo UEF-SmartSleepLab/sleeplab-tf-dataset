@@ -63,8 +63,8 @@ def load_annotations(
     fpath = _subj_dir / cfg['src_name']
     df = pd.read_parquet(fpath)
 
-    frame_start_sec = start_sec
-    frame_duration = duration
+    frame_start_sec = start_sec.numpy()
+    frame_duration = duration.numpy()
 
     if cfg['fs'] is not None:
         fs = cfg['fs']
