@@ -5,7 +5,7 @@ start_sec: 0.0
 duration: -1.0
 
 roi_src_type: "annotation"
-roi_src_name: "hypnogram"
+roi_src_name: "scorer_1_hypnogram"
 
 components:
 
@@ -20,7 +20,7 @@ components:
     fs: 64.0
 
   events:
-    src_name: "events_annotated.parquet"
+    src_name: "automatic_aasmevents.a.parquet"
     ctype: "annotation"
     fs: 1.0
     return_type: "bbox"
@@ -32,14 +32,14 @@ components:
       _default: 0
 
   hypnogram:
-    src_name: "hypnogram_annotated.parquet"
+    src_name: "scorer_1_hypnogram.a.parquet"
     ctype: "annotation"
     sampling_interval: 30.0
     return_type: "segmentation_combined"
     value_map:
-      WAKE: 0
+      W: 0
       N1: 1
       N2: 2
       N3: 3
-      REM: 4
+      R: 4
       _default: 0 
