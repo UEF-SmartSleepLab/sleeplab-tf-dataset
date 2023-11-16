@@ -1,6 +1,6 @@
 import logging
 
-from . import config, dataset
+from . import compose, config, dataset
 
 
 logging.basicConfig(
