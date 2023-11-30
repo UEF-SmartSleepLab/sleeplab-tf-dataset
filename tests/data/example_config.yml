@@ -20,7 +20,7 @@ components:
     fs: 64.0
 
   events:
-    src_name: "automatic_aasmevents.a.parquet"
+    src_name: "automatic_aasmevents.a.json"
     ctype: "annotation"
     fs: 1.0
     return_type: "bbox"
@@ -32,7 +32,7 @@ components:
       _default: 0
 
   hypnogram:
-    src_name: "scorer_1_hypnogram.a.parquet"
+    src_name: "scorer_1_hypnogram.a.json"
     ctype: "annotation"
     sampling_interval: 30.0
     return_type: "segmentation_combined"

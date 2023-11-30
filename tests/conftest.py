@@ -14,7 +14,7 @@ def example_config_path():
 @pytest.fixture
 def ds_dir(dataset, tmp_path):
     basedir = tmp_path / 'datasets'
-    writer.write_dataset(dataset, basedir, annotation_format='parquet')
+    writer.write_dataset(dataset, basedir, annotation_format='json')
 
     return basedir / dataset.name
 

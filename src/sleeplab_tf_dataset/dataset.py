@@ -1,4 +1,4 @@
-import json  # TODO: faster alternatives? e.g. ultrajson
+import json
 import numpy as np
 import pandas as pd
 import sleeplab_format as slf
@@ -6,8 +6,8 @@ import tensorflow as tf
 
 from functools import partial
 from pathlib import Path
-from sleeplab_tf_dataset.config import ComponentConfig, DatasetConfig
-from typing import Any, Callable
+from sleeplab_tf_dataset.config import DatasetConfig
+from typing import Any
 
 
 def load_sample_array(
@@ -61,7 +61,15 @@ def load_annotations(
     """
     _subj_dir = Path(subject_dir.numpy().decode())
     fpath = _subj_dir / cfg['src_name']
-    df = pd.read_parquet(fpath)
+    if fpath.suffix == '.parquet':
+        df = pd.read_parquet(fpath)
+    elif fpath.suffix == '.json':
+        with open(fpath, 'rb') as f:
+            raw_data = f.read()
+            ann = slf.models.BaseAnnotations.model_validate_json(raw_data)
+            df = pd.DataFrame([dict(a) for a in ann.annotations])
+    else:
+        raise AttributeError(f'Unsupported annotation file format {fpath}')
 
     frame_start_sec = start_sec.numpy()
     frame_duration = duration.numpy()
@@ -117,7 +125,7 @@ def load_annotations(
         bboxes = tf.convert_to_tensor(bboxes, dtype=tf.int32)
         labels = tf.convert_to_tensor(labels, dtype=tf.int32)
 
-        return bboxes, labels        
+        return bboxes, labels
 
     else:
         raise AttributeError(f'Unsupported return_type {cfg["return_type"]}')
