@@ -79,23 +79,24 @@ def load_annotations(
     else:
         fs = 1 / cfg['sampling_interval']
 
-    # Calculate end times
-    df['end_sec'] = df['start_sec'] + df['duration']
+    if len(df) > 0:
+        # Calculate end times
+        df['end_sec'] = df['start_sec'] + df['duration']
 
-    # Filter out events outside the desired timeframe
-    frame_end_sec = frame_start_sec + frame_duration
-    df = df[df['end_sec'] > frame_start_sec]
-    df = df[df['start_sec'] < frame_end_sec]
+        # Filter out events outside the desired timeframe
+        frame_end_sec = frame_start_sec + frame_duration
+        df = df[df['end_sec'] > frame_start_sec]
+        df = df[df['start_sec'] < frame_end_sec]
 
-    # Filter the desired event types
-    df = df[df['name'].isin(cfg['value_map'].keys())]
+        # Filter the desired event types
+        df = df[df['name'].isin(cfg['value_map'].keys())]
 
-    # Transform start and end times from seconds to indices wrt the timeframe
-    df['start_idx'] = ((df['start_sec'] - frame_start_sec) * fs).astype(int)
-    df['start_idx'] = df['start_idx'].clip(lower=0)
+        # Transform start and end times from seconds to indices wrt the timeframe
+        df['start_idx'] = ((df['start_sec'] - frame_start_sec) * fs).astype(int)
+        df['start_idx'] = df['start_idx'].clip(lower=0)
 
-    df['end_idx'] = ((df['end_sec'] - frame_start_sec) * fs).astype(int)
-    df['end_idx'] = df['end_idx'].clip(upper=int(fs*duration))
+        df['end_idx'] = ((df['end_sec'] - frame_start_sec) * fs).astype(int)
+        df['end_idx'] = df['end_idx'].clip(upper=int(fs*duration))
 
     # Transform the dataframe to the desired output format
     if cfg['return_type'] == 'segmentation_combined':
