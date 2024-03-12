@@ -292,7 +292,7 @@ def roi_start_end_sec(
         slen = sarr.values_func().shape[0]
         return 0.0, float(slen / fs)
 
-    assert src_type in ('analysis_start_end', 'annotation', 'sample_array')
+    assert src_type in ('annotation', 'sample_array', 'lights_off_on')
     start_sec_list = []
     end_sec_list = []
     
@@ -301,10 +301,9 @@ def roi_start_end_sec(
             start, end = roi_start_end_from_annotation(subj, src_name)
         elif src_type == 'sample_array':
             start, end = roi_start_end_from_sample_array(subj, src_name)
-        elif src_type == 'analysis_start_end':
-            # TODO This is not yet tested
-            start = subj.attributes.analysis_start
-            end = subj.attributes.analysis_end
+        elif src_type == 'lights_off_on':
+            start = (subj.metadata.lights_off - subj.metadata.recording_start_ts).total_seconds()
+            end = (subj.metadata.lights_on - subj.metadata.recording_start_ts).total_seconds()
         
         start_sec_list.append(start)
         end_sec_list.append(end)
