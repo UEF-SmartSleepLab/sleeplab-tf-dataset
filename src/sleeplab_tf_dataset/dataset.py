@@ -267,7 +267,9 @@ def load_element(
 
 def roi_start_end_sec(
         subjects: dict[str, slf.models.Subject],
-        src_type: str, src_name: str) -> tuple[float, float]:
+        src_type: str,
+        src_name: str,
+        epoch_sec: float = 30.0) -> tuple[float, float]:
     """Resolve start and end times for the region of interest.
     
     Args:
@@ -304,6 +306,16 @@ def roi_start_end_sec(
         elif src_type == 'lights_off_on':
             start = (subj.metadata.lights_off - subj.metadata.recording_start_ts).total_seconds()
             end = (subj.metadata.lights_on - subj.metadata.recording_start_ts).total_seconds()
+
+        # Calculate the signal length from first sample array
+        first_sarr = next(iter(subj.sample_arrays.values()))
+        slen_sec = first_sarr.values_func().shape[0] // first_sarr.attributes.sampling_rate
+
+        # If the last epoch is too short, discard it
+        if end > slen_sec:
+            end = end - epoch_sec
+        # If the end time is still later than signal end, raise error
+        assert end <= slen_sec, f'Subject {subj.metadata.subject_id}: signal length is {slen_sec}, tried to set end time to {end} s...'
         
         start_sec_list.append(start)
         end_sec_list.append(end)
