@@ -288,4 +288,20 @@ def test_load_dataset(ds_dir, example_config_path):
     # Should raise StopIteration because whole dataset was already iterated
     with pytest.raises(StopIteration):
         numpy_iter.next()
-    
+
+
+def test_series_name_list(ds_dir, example_config_path):
+    cfg = config.parse_config(example_config_path)
+    cfg.ds_dir = ds_dir
+    # Put the single series name to a list
+    cfg.series_name = [cfg.series_name]
+    slf_ds = slf.reader.read_dataset(ds_dir)
+    tf_ds = dataset.from_slf_dataset(slf_ds, cfg)
+
+    numpy_iter = tf_ds.as_numpy_iterator()
+    for elem in numpy_iter:
+        print(elem)
+
+    # Should raise StopIteration because whole dataset was already iterated
+    with pytest.raises(StopIteration):
+        numpy_iter.next()

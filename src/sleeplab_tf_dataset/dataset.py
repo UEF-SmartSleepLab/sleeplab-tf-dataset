@@ -331,19 +331,25 @@ def from_slf_dataset(
         # Tensorflow does not understand custom objects so cast it to dict
         return {k: v.model_dump() for k, v in cfg.items()}
 
-    # Resolve subject_dirs as string tensors
-    series_dir = cfg.ds_dir / cfg.series_name
+    # If a single series name is given, put it to a list
+    series_names = [cfg.series_name] if type(cfg.series_name) == str else cfg.series_name
+
     subject_dirs = []
-    series = slf_ds.series[cfg.series_name]
-    subjects = series.subjects
+    subjects = {}
+    for series_name in series_names:
+        # Resolve subject_dirs as string tensors
+        series_dir = cfg.ds_dir / series_name
+        series = slf_ds.series[series_name]
+        _subjects = series.subjects
 
-    if subject_ids is not None:
-        subjects = {k: v for k, v in subjects.items() if k in subject_ids}
+        if subject_ids is not None:
+            _subjects = {k: v for k, v in _subjects.items() if k in subject_ids}
 
-    for subj_id in subjects.keys():
-        subject_dir = series_dir / subj_id
-        subj_dir_tensor = tf.convert_to_tensor(str(subject_dir))
-        subject_dirs.append(subj_dir_tensor)
+        subjects.update(_subjects)
+        for subj_id in _subjects.keys():
+            subject_dir = series_dir / subj_id
+            subj_dir_tensor = tf.convert_to_tensor(str(subject_dir))
+            subject_dirs.append(subj_dir_tensor)
 
     # Resolve ROI start and end times
     roi_starts, roi_ends = roi_start_end_sec(subjects, cfg.roi_src_type, cfg.roi_src_name)

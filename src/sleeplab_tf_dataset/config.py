@@ -15,7 +15,7 @@ class ComponentConfig(BaseModel, extra='forbid'):
 
 class DatasetConfig(BaseModel, extra='forbid'):
     ds_dir: Path
-    series_name: str
+    series_name: str | list[str]
     components: dict[str, ComponentConfig]
 
     start_sec: float
