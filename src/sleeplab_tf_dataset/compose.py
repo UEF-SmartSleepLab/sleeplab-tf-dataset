@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 def parse_dataset_configs(cfg: dict[str, Any]) -> dict[str, sds.config.DatasetConfig]:
     """Parse configs for datasets and splits from dicts to DatasetConfigs."""
+    cfg = cfg.copy()  # Copy so that the original config does not get modified
     splits = cfg.pop('splits')
     res = {}
 
