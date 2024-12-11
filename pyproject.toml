@@ -24,7 +24,7 @@ dependencies = [
   "numpy",
   "pandas",
   "pyyaml",
-  "tensorflow",
+  "tensorflow-cpu",
   "sleeplab-format==0.4.0"
 ]
 dynamic = ["version"]
